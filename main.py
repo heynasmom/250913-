@@ -1,43 +1,33 @@
 import streamlit as st
+import pandas as pd
+import altair as alt
 
-# ----------------------
-# 데이터: MBTI별 공부 방법
-# ----------------------
-study_tips = {
-    "INTJ": "📚 전략적 계획 세우기 → 목표를 세분화하고 장기적인 플랜으로 학습해요.",
-    "ENTP": "💡 토론과 아이디어 교환 → 친구와 토론하며 창의적 에너지를 발휘해요!",
-    "INFJ": "🧘‍♀️ 조용한 공간 + 깊은 몰입 → 자기 성찰과 연결된 공부가 잘 맞아요.",
-    "ESFP": "🎶 음악 + 활동적인 학습 → 소리 내어 읽거나 동작과 함께 학습하면 효과적!",
-    "ISTJ": "📝 체크리스트 & 반복 학습 → 꼼꼼한 정리와 복습으로 완벽히 다져요.",
-    "ENFP": "🌈 다채로운 방식 → 그림, 색깔, 스토리텔링으로 기억을 강화해요.",
-    "ISFJ": "🤝 누군가를 돕듯 공부 → 다른 사람에게 설명하며 배우면 실력이 쑥쑥!",
-    "ESTP": "⚡ 짧고 강렬한 집중 → 짧은 시간 몰입 후 휴식을 반복하면 효율적!",
-    "ISTP": "🔧 실험과 응용 → 직접 문제를 풀거나 실습을 통해 배우는 게 좋아요.",
-    "ENTJ": "🚀 목표지향적 학습 → 도전적인 목표를 세우고 달성하며 성장해요.",
-    "INFP": "🎨 창의적 접근 → 글쓰기, 그림, 음악과 연결해 학습하면 즐거워요.",
-    "ESTJ": "📊 체계적 계획 + 관리 → 시간표와 규칙적인 학습 루틴이 잘 맞아요.",
-    "INTP": "🔍 개념 깊게 파고들기 → 원리를 이해하고 연결 짓는 공부를 즐겨요.",
-    "ESFJ": "👥 그룹 스터디 → 친구들과 함께하면 동기부여와 효과 UP!",
-    "ISFP": "🍃 편안한 분위기 → 자연스러운 환경에서 감각적으로 배우면 좋아요.",
-    "ENFJ": "🌟 리더형 학습 → 스터디를 이끌거나 가르치며 배움이 깊어져요."
-}
+# CSV 불러오기
+df = pd.read_csv("countriesMBTI_16types.csv")
 
-# ----------------------
-# 웹사이트 UI
-# ----------------------
-st.set_page_config(page_title="MBTI 공부법 추천기", page_icon="📖", layout="centered")
+st.title("🌍 MBTI 유형별 국가 분포 Top 10")
 
-st.title("📖 MBTI 공부 방법 추천기 ✨")
-st.write("당신의 MBTI 유형을 선택하면, 가장 잘 맞는 공부 방법을 알려드려요! 💡")
+# MBTI 유형 리스트
+types = [col for col in df.columns if col != "Country"]
 
-# 드롭다운으로 MBTI 선택
-mbti = st.selectbox("👉 MBTI 유형을 선택하세요:", options=sorted(study_tips.keys()))
+# 선택 박스에서 MBTI 유형 선택
+selected_type = st.selectbox("MBTI 유형을 선택하세요:", types)
 
-# 추천 결과 표시
-if mbti:
-    st.subheader(f"✨ {mbti} 유형을 위한 공부법 ✨")
-    st.success(study_tips[mbti])
+# Top 10 국가 추출
+top10 = df[["Country", selected_type]].sort_values(by=selected_type, ascending=False).head(10)
 
-# 푸터
-st.markdown("---")
-st.markdown("Made with ❤️ using Streamlit")
+st.write(f"### {selected_type} 유형 비율이 가장 높은 국가 Top 10")
+
+# Altair 그래프 생성
+chart = (
+    alt.Chart(top10)
+    .mark_bar()
+    .encode(
+        x=alt.X(selected_type, title="비율", scale=alt.Scale(domain=[0, top10[selected_type].max()*1.1])),
+        y=alt.Y("Country", sort="-x", title="국가"),
+        tooltip=["Country", selected_type]
+    )
+    .interactive()
+)
+
+st.altair_chart(chart, use_container_width=True)
