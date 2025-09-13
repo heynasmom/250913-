@@ -15,7 +15,7 @@ st.write("CSV 파일을 기본적으로 같은 폴더에서 불러옵니다. 만
 # CSV 불러오기 (기본: 로컬, 예외: 업로드)
 # ----------------------
 def load_data():
-    default_path = "mbti_data.csv"  # 같은 폴더에 있다고 가정
+    default_path = "countriesMBTI_16types"  # 같은 폴더에 있다고 가정
     if os.path.exists(default_path):
         st.info(f"기본 데이터 파일 `{default_path}` 를 불러왔습니다.")
         return pd.read_csv(default_path)
